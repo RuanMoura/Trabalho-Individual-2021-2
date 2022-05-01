@@ -18,3 +18,11 @@ services:
       dockerfile: ./Dockerfile
     depends_on:
       - database
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./prod/Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      - app

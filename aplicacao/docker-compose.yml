@@ -1,4 +1,4 @@
-version: '3.6'
+version: '2.2'
 
 services:
   database:
@@ -8,6 +8,11 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes: 
       - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   app:
     ports:
       - 3000:3000
@@ -17,7 +22,8 @@ services:
       context: ./
       dockerfile: ./Dockerfile
     depends_on:
-      - database
+      database:
+        condition: service_healthy
   nginx:
     build:
       context: ./

@@ -1,0 +1,39 @@
+name: "Ruby on Rails CI"
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build app
+        run: docker-compose -f ./aplicacao/docker-compose.yml up --build -d
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: docker-compose -f ./aplicacao/docker-compose.yml up -d
+      - name: Wait 15 seconds
+        run: sleep 15
+      - name: Reset Database
+        run: docker exec aplicacao_app_1 bundle exec rails db:reset
+      - name: Run test
+        run: docker exec aplicacao_app_1 rspec
+  lint:
+    name: Lint
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: docker-compose -f ./aplicacao/docker-compose.yml up -d
+      - name: Run rubocop
+        run: docker exec aplicacao_app_1 bundle exec rubocop --fail-level W

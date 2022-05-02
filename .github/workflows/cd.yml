@@ -1,0 +1,20 @@
+name: Ruby on Rails CD
+on:
+  workflow_run:
+    workflows: [ Ruby on Rails CI ]
+    types:
+      - completed
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build app
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/gces-trabalho-final-2021.2 ./aplicacao/
+      - name: Deploy app
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/gces-trabalho-final-2021.2
